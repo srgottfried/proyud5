@@ -6,20 +6,11 @@ import java.util.List;
 
 public class Proveedor {
 
-    private Long id;
     private String nombreEmpresa;
     private String cif;
     private String direccion;
 
     private List<ObjectId> productos;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getNombreEmpresa() {
         return nombreEmpresa;

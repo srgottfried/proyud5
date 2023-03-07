@@ -5,8 +5,6 @@ import java.util.List;
 
 public class Factura {
 
-    private Long id;
-
     private String descripcion;
 
     private String observacion;
@@ -18,14 +16,6 @@ public class Factura {
 
     public Factura() {
         this.items = new ArrayList<>();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getDescripcion() {
