@@ -6,6 +6,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.proyud5.database.MongoDbConnection;
 import org.proyud5.database.MongoDbCollectionPersistenceManager;
@@ -344,14 +345,17 @@ public class Main {
     }
 
 
-    private static void agregacion() {
+    private static void agrupamiento() {
 
         System.out.println("\n--------------------------------------------------------------");
-        System.out.println("| 3 operaciones de agregación usando pipelines                |");
+        System.out.println("| 3 operaciones de agrupamiento usando pipelines                |");
         System.out.println("--------------------------------------------------------------\n");
+        AggregateIterable<Document> result;
 
-        System.out.println("1 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO POR COORDENADAS");
-        AggregateIterable<Document> result = clientesCollectionManager.getCollection().aggregate(Arrays.asList(
+
+        System.out.println("1 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO CON COORDENADAS ESPECÍFICAS");
+
+        result = clientesCollectionManager.getCollection().aggregate(Arrays.asList(
                 new Document("$group", new Document("_id", "$ubicacion.coordenadas")
                         .append("numClientes", new Document("$sum", 1))),
                 new Document("$group", new Document("_id", null)
@@ -365,7 +369,50 @@ public class Main {
 
 
         System.out.println("2 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO POR COORDENADAS");
+        result = clientesCollectionManager.getCollection().aggregate(Arrays.asList(
+                new Document("$group", new Document("_id", "$ubicacion.coordenadas")
+                        .append("numClientes", new Document("$sum", 1))),
+                new Document("$group", new Document("_id", null)
+                        .append("numCoordenadas", new Document("$sum", 1))
+                        .append("avgClientesPorCoordenada", new Document("$avg", "$numClientes")))
+        ));
 
+        for (Document document : result) {
+            System.out.println(document.toJson());
+        }
+
+    }
+
+    public static void agregacion() {
+
+        System.out.println("\n--------------------------------------------------------------");
+        System.out.println("| 3 operaciones de agregación usando pipelines y $lookup               |");
+        System.out.println("--------------------------------------------------------------\n");
+        AggregateIterable<Document> result;
+
+        System.out.println("1 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.");
+        List<Bson> pipeline = Arrays.asList(
+                new Document("$match", new Document("nombreempresa", "Electrónica y Suministros")),
+                new Document("$unwind", "$productos"),
+                new Document("$lookup", new Document("from", "productos").append("localField", "productos").append("foreignField", "_id").append("as", "producto")),
+                new Document("$group", new Document("_id", "$nombreempresa").append("productos", new Document("$push", "$producto"))),
+                new Document("$project", new Document("nombreempresa", "$_id").append("productos", 1).append("_id", 0))
+        );
+
+        result = proveedoresCollectionManager.getCollection().aggregate(pipeline);
+        result.forEach(System.out::println);
+
+
+        System.out.println("\n2 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.");
+        pipeline = Arrays.asList(
+                new Document("$match", new Document("nombre", "Javier")),
+                new Document("$unwind", "$facturas"),
+                new Document("$unwind", "$facturas.items"),
+                new Document("$lookup", new Document("from", "productos").append("localField", "facturas.items.producto").append("foreignField", "_id").append("as", "detalles_producto")));
+
+
+        result = clientesCollectionManager.getCollection().aggregate(pipeline);
+        result.forEach(System.out::println);
     }
 
     private static void exportacion() {
@@ -384,6 +431,8 @@ public class Main {
         consulta();
 
         actualizacion();
+
+        agrupamiento();
 
         agregacion();
 
