@@ -1,10 +1,12 @@
 package org.proyud5;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -19,9 +21,21 @@ import java.util.*;
 
 public class Main {
 
+    static final String ANSI_BLACK = "\u001B[30m";
+    static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_RESET = "\u001B[0m";
+
     static MongoDbCollectionPersistenceManager clientesCollectionManager = new MongoDbCollectionPersistenceManager("clientes");
     static MongoDbCollectionPersistenceManager productosCollectionManager = new MongoDbCollectionPersistenceManager("productos");
     static MongoDbCollectionPersistenceManager proveedoresCollectionManager = new MongoDbCollectionPersistenceManager("proveedores");
+
+    public static void printFormatString(String str, String color) {
+
+        StringBuilder sb = new StringBuilder();
+
+        System.out.println(sb.append(color).append(str).append(ANSI_RESET));
+    }
 
     /**
      * Establece conexión con la base de datos indicada en el fichero `mongodbconfig.properties`.
@@ -52,11 +66,13 @@ public class Main {
     }
 
     private static void consulta() {
-        System.out.println("\n--------------------------------------------------------------");
-        System.out.println("| 6 operaciones de consulta empleando filtros y proyecciones |");
-        System.out.println("--------------------------------------------------------------\n");
+        String titulo = "\n--------------------------------------------------------------\n" +
+                "| 6 operaciones de consulta empleando filtros y proyecciones |\n" +
+                "--------------------------------------------------------------\n";
 
-        System.out.println("1 - CONSULTA LOS PRODUCTOS");
+        printFormatString(titulo, ANSI_GREEN);
+
+        printFormatString("1 - CONSULTA LOS PRODUCTOS", ANSI_RED);
         productosCollectionManager
                 .getCollection()
                 .find()
@@ -64,7 +80,7 @@ public class Main {
         System.out.println("\n");
 
 
-        System.out.println("2 - CONSULTA LOS CLIENTES CON NOMBRE \"Manuel\"");
+        printFormatString("2 - CONSULTA LOS CLIENTES CON NOMBRE \"Manuel\"", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -72,7 +88,7 @@ public class Main {
                 .forEach(System.out::println);
         System.out.println("\n");
 
-        System.out.println("3 - CONSULTA LOS CLIENTES MENORES DE 40 AÑOS Y SIN UBICACIÓN");
+        printFormatString("3 - CONSULTA LOS CLIENTES MENORES DE 40 AÑOS Y SIN UBICACIÓN", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -82,7 +98,7 @@ public class Main {
         System.out.println("\n");
 
 
-        System.out.println("4 - CONSULTA LOS PRODUCTOS CON PRECIO >400€");
+        printFormatString("4 - CONSULTA LOS PRODUCTOS CON PRECIO >400€", ANSI_RED);
         productosCollectionManager
                 .getCollection()
                 .find()
@@ -91,7 +107,7 @@ public class Main {
         System.out.println("\n");
 
 
-        System.out.println("5 - CONSULTA LOS PRODUCTOS CON PRECIO >400€ PROYECTÁNDOLOS SIN NOMBRE");
+        printFormatString("5 - CONSULTA LOS PRODUCTOS CON PRECIO >400€ PROYECTÁNDOLOS SIN NOMBRE", ANSI_RED);
         productosCollectionManager
                 .getCollection()
                 .find()
@@ -101,7 +117,7 @@ public class Main {
         System.out.println("\n");
 
 
-        System.out.println("6 - CONSULTA LOS PROVEEDORES QUE VENDEN EXACTAMENTE 2 PRODUCTOS DISTINTOS");
+        printFormatString("6 - CONSULTA LOS PROVEEDORES QUE VENDEN EXACTAMENTE 2 PRODUCTOS DISTINTOS", ANSI_RED);
         proveedoresCollectionManager
                 .getCollection()
                 .find()
@@ -110,7 +126,7 @@ public class Main {
         System.out.println("\n");
 
 
-        System.out.println("7 - CONSULTA LOS PROVEEDORES QUE VENDEN EXACTAMENTE 2 PRODUCTOS DISTINTOS PROYECTANDO NOMBRE Y PRECIO ");
+        printFormatString("7 - CONSULTA LOS PROVEEDORES QUE VENDEN EXACTAMENTE 2 PRODUCTOS DISTINTOS PROYECTANDO NOMBRE Y PRECIO ", ANSI_RED);
         proveedoresCollectionManager
                 .getCollection()
                 .find()
@@ -120,7 +136,7 @@ public class Main {
         System.out.println("\n");
 
 
-        System.out.println("8 - CONSULTA LOS PROVEEDORES QUE VENDEN EXACTAMENTE 2 PRODUCTOS DISTINTOS PROYECTANDO NOMBRE Y PRECIO ");
+        printFormatString("8 - CONSULTA LOS PROVEEDORES QUE VENDEN EXACTAMENTE 2 PRODUCTOS DISTINTOS PROYECTANDO NOMBRE Y PRECIO ", ANSI_RED);
         proveedoresCollectionManager
                 .getCollection()
                 .find()
@@ -132,14 +148,16 @@ public class Main {
 
     private static void actualizacion() {
 
-        System.out.println("\n--------------------------------------------------------------");
-        System.out.println("| 6 operaciones de actualización empleando updates y replaces   |");
-        System.out.println("--------------------------------------------------------------\n");
+        String titulo = ("\n--------------------------------------------------------------\n" +
+                "| 6 operaciones de actualización empleando updates y replaces   |\n" +
+                "--------------------------------------------------------------\n");
 
-        System.out.println("1 - ACTUALIZACIÓN DEL EMAIL DEL CLIENTE CON NOMBRE \"Manuel\"  Y PROYECCIÓN POR NOMBRE Y EMAIL");
+        printFormatString(titulo, ANSI_GREEN);
+
+        printFormatString("1 - ACTUALIZACIÓN DEL EMAIL DEL CLIENTE CON NOMBRE \"Manuel\"  Y PROYECCIÓN POR NOMBRE Y EMAIL", ANSI_RED);
 
         // CLIENTE ANTIGUO
-        System.out.println("Cliente antiguo");
+        printFormatString("Cliente antiguo", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -155,7 +173,7 @@ public class Main {
                         new Document("$set", new Document("email", "nuevoMail@mail.com"))
                 );
 
-        System.out.println("Cliente nuevo");
+        printFormatString("Cliente nuevo", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -165,10 +183,10 @@ public class Main {
 
         System.out.println("\n");
 
-        System.out.println("2 - ACTUALIZACIÓN DE LA EDAD DE \"Lucía\" Y PROYECCIÓN POR NOMBRE Y EDAD");
+        printFormatString("2 - ACTUALIZACIÓN DE LA EDAD DE \"Lucía\" Y PROYECCIÓN POR NOMBRE Y EDAD", ANSI_RED);
 
         // CLIENTE ANTIGUO
-        System.out.println("Cliente antiguo");
+        printFormatString("Cliente antiguo", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -185,7 +203,7 @@ public class Main {
                         new Document("$set", new Document("edad", 60))
                 );
 
-        System.out.println("Cliente nuevo");
+        printFormatString("Cliente nuevo", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -196,10 +214,10 @@ public class Main {
 
         System.out.println("\n");
 
-        System.out.println("3 - ACTUALIZACIÓN DEL PRECIO DE \"Cámara DSLR Canon EOS Rebel T7\" INCREMENTANDO 1000€ ");
+        printFormatString("3 - ACTUALIZACIÓN DEL PRECIO DE \"Cámara DSLR Canon EOS Rebel T7\" INCREMENTANDO 1000€ ", ANSI_RED);
 
         // PRDUCTO ANTIGUO
-        System.out.println("Producto antiguo");
+        printFormatString("Producto antiguo", ANSI_RED);
         productosCollectionManager
                 .getCollection()
                 .find()
@@ -216,7 +234,7 @@ public class Main {
                 );
 
 
-        System.out.println("Producto nuevo");
+        printFormatString("Producto nuevo", ANSI_RED);
         productosCollectionManager
                 .getCollection()
                 .find()
@@ -224,10 +242,10 @@ public class Main {
                 .forEach(System.out::println);
 
 
-        System.out.println("\n4 - AÑADIENDO FACTURAS AL USUARIO CON EMAIL \"javier@mail.com\" ");
+        printFormatString("\n4 - AÑADIENDO FACTURAS AL USUARIO CON EMAIL \"javier@mail.com\" ", ANSI_RED);
 
         // PRDUCTO ANTIGUO
-        System.out.println("Producto antiguo");
+        printFormatString("Producto antiguo", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -258,7 +276,7 @@ public class Main {
                 );
 
 
-        System.out.println("Producto nuevo");
+        printFormatString("Producto nuevo", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -267,10 +285,10 @@ public class Main {
                 .forEach(System.out::println);
 
 
-        System.out.println("\n5 - ACTUALIZACIÓN DE LA LISTA DE FACTURAS DEL USUARIO  CON EMAIL \"javier@mail.com\"");
+        printFormatString("\n5 - ACTUALIZACIÓN DE LA LISTA DE FACTURAS DEL USUARIO  CON EMAIL \"javier@mail.com\"", ANSI_RED);
 
         // PRDUCTO ANTIGUO
-        System.out.println("Clientes antiguos");
+        printFormatString("Clientes antiguos", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -301,7 +319,7 @@ public class Main {
                 );
 
 
-        System.out.println("Clientes nuevos");
+        printFormatString("Clientes nuevos", ANSI_RED);
         clientesCollectionManager
                 .getCollection()
                 .find()
@@ -310,10 +328,10 @@ public class Main {
                 .forEach(System.out::println);
 
 
-        System.out.println("\n6 - ACTUALIZACIÓN LOS PRODUCTOS ASOCIADOS AL PROVEEDOR \"Electrónica y Suministros\" ");
+        printFormatString("\n6 - ACTUALIZACIÓN LOS PRODUCTOS ASOCIADOS AL PROVEEDOR \"Electrónica y Suministros\" ", ANSI_RED);
 
         // PRDUCTO ANTIGUO
-        System.out.println("Antiguos proveedores");
+        printFormatString("Antiguos proveedores", ANSI_RED);
         proveedoresCollectionManager
                 .getCollection()
                 .find()
@@ -337,7 +355,7 @@ public class Main {
                         )
                 );
 
-        System.out.println("Nuevos proveedores");
+        printFormatString("Nuevos proveedores", ANSI_RED);
 
         proveedoresCollectionManager
                 .getCollection()
@@ -349,13 +367,16 @@ public class Main {
 
     private static void agrupamiento() {
 
-        System.out.println("\n--------------------------------------------------------------");
-        System.out.println("| 3 operaciones de agrupamiento usando pipelines                |");
-        System.out.println("--------------------------------------------------------------\n");
+        String title = "\n--------------------------------------------------------------\n" +
+                "| 3 operaciones de agrupamiento usando pipelines                |\n" +
+                "--------------------------------------------------------------\n";
+
+        printFormatString(title, ANSI_GREEN);
+
         AggregateIterable<Document> result;
 
 
-        System.out.println("1 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO CON COORDENADAS ESPECÍFICAS");
+        printFormatString("1 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO CON COORDENADAS ESPECÍFICAS", ANSI_RED);
 
         result = clientesCollectionManager.getCollection().aggregate(Arrays.asList(
                 new Document("$group", new Document("_id", "$ubicacion.coordenadas")
@@ -370,7 +391,7 @@ public class Main {
         }
 
 
-        System.out.println("2 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO POR COORDENADAS");
+        printFormatString("2 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO POR COORDENADAS", ANSI_RED);
         result = clientesCollectionManager.getCollection().aggregate(Arrays.asList(
                 new Document("$group", new Document("_id", "$ubicacion.coordenadas")
                 ),
@@ -384,7 +405,7 @@ public class Main {
         }
 
 
-        System.out.println("3 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO POR COORDENADAS");
+        printFormatString("3 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO POR COORDENADAS", ANSI_RED);
         result = clientesCollectionManager.getCollection().aggregate(Arrays.asList(
                 new Document("$group", new Document("_id", "$ubicacion.coordenadas")
                         .append("numClientes", new Document("$sum", 1))),
@@ -399,12 +420,15 @@ public class Main {
 
     public static void agregacion() {
 
-        System.out.println("\n--------------------------------------------------------------");
-        System.out.println("| 3 operaciones de agregación usando pipelines y $lookup        |");
-        System.out.println("--------------------------------------------------------------\n");
+        String title = ("\n--------------------------------------------------------------\n") +
+                ("| 3 operaciones de agregación usando pipelines y $lookup        |\n") +
+                "--------------------------------------------------------------\n";
+
+        printFormatString(title, ANSI_GREEN);
+
         AggregateIterable<Document> result;
 
-        System.out.println("1 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.");
+        printFormatString("1 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.", ANSI_RED);
         List<Bson> pipeline = Arrays.asList(
                 new Document("$match", new Document("nombreempresa", "Electrónica y Suministros")),
                 new Document("$unwind", "$productos"),
@@ -417,7 +441,7 @@ public class Main {
         result.forEach(System.out::println);
 
 
-        System.out.println("\n2 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.");
+        printFormatString("\n2 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.", ANSI_RED);
         pipeline = Arrays.asList(
                 new Document("$match", new Document("nombre", "Javier")),
                 new Document("$unwind", "$facturas"),
@@ -429,7 +453,7 @@ public class Main {
         result.forEach(System.out::println);
 
 
-        System.out.println("\n3 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.");
+        printFormatString("\n3 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.", ANSI_RED);
         pipeline = Arrays.asList(
                 new Document("$match", new Document("nombre", "Manuel")),
                 new Document("$unwind", "$facturas"),
@@ -445,7 +469,7 @@ public class Main {
         try {
 
 
-            ObjectMapper mapeador = new ObjectMapper();
+            ObjectMapper mapeador = new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
 
 
             var consulta = clientesCollectionManager.getCollection().find()
@@ -456,7 +480,6 @@ public class Main {
             mapeador.writeValue(fichero, consulta);
 
 
-
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -464,7 +487,7 @@ public class Main {
         try {
 
 
-            ObjectMapper mapeador = new ObjectMapper();
+            ObjectMapper mapeador = new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
 
 
             var consulta = proveedoresCollectionManager.getCollection().find()
@@ -475,7 +498,6 @@ public class Main {
             mapeador.writeValue(fichero, consulta);
 
 
-
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -483,7 +505,7 @@ public class Main {
         try {
 
 
-            ObjectMapper mapeador = new ObjectMapper();
+            ObjectMapper mapeador = new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
 
 
             var consulta = productosCollectionManager.getCollection().find()
@@ -492,7 +514,6 @@ public class Main {
             File fichero = new File("src\\main\\resources\\ficheroProductos.json");
 
             mapeador.writeValue(fichero, consulta);
-
 
 
         } catch (Exception e) {
