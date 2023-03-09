@@ -1,5 +1,6 @@
 package org.proyud5;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -13,6 +14,7 @@ import org.proyud5.database.MongoDbCollectionPersistenceManager;
 import org.proyud5.model.entity.*;
 import org.proyud5.parser.PojoToDocument;
 
+import java.io.File;
 import java.util.*;
 
 public class Main {
@@ -180,7 +182,7 @@ public class Main {
                 .getCollection()
                 .updateOne(
                         Filters.eq("nombre", "Lucía"),
-                        new Document("$set", new Document("edad", "60"))
+                        new Document("$set", new Document("edad", 60))
                 );
 
         System.out.println("Cliente nuevo");
@@ -371,22 +373,34 @@ public class Main {
         System.out.println("2 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO POR COORDENADAS");
         result = clientesCollectionManager.getCollection().aggregate(Arrays.asList(
                 new Document("$group", new Document("_id", "$ubicacion.coordenadas")
-                        .append("numClientes", new Document("$sum", 1))),
+                ),
                 new Document("$group", new Document("_id", null)
                         .append("numCoordenadas", new Document("$sum", 1))
-                        .append("avgClientesPorCoordenada", new Document("$avg", "$numClientes")))
+                )
         ));
 
         for (Document document : result) {
             System.out.println(document.toJson());
         }
 
+
+        System.out.println("3 - CÁLCULO DEL NÚMERO DE CLIENTES PROMEDIO POR COORDENADAS");
+        result = clientesCollectionManager.getCollection().aggregate(Arrays.asList(
+                new Document("$group", new Document("_id", "$ubicacion.coordenadas")
+                        .append("numClientes", new Document("$sum", 1))),
+                new Document("$group", new Document("_id", null)
+                        .append("avgClientesPorCoordenada", new Document("$avg", "$numClientes")))
+        ));
+
+        for (Document document : result) {
+            System.out.println(document.toJson());
+        }
     }
 
     public static void agregacion() {
 
         System.out.println("\n--------------------------------------------------------------");
-        System.out.println("| 3 operaciones de agregación usando pipelines y $lookup               |");
+        System.out.println("| 3 operaciones de agregación usando pipelines y $lookup        |");
         System.out.println("--------------------------------------------------------------\n");
         AggregateIterable<Document> result;
 
@@ -413,11 +427,77 @@ public class Main {
 
         result = clientesCollectionManager.getCollection().aggregate(pipeline);
         result.forEach(System.out::println);
+
+
+        System.out.println("\n3 - CONSULTA DE AGREGACIÓN USANDO LA ETAPA $lookup.");
+        pipeline = Arrays.asList(
+                new Document("$match", new Document("nombre", "Manuel")),
+                new Document("$unwind", "$facturas"),
+                new Document("$lookup", new Document("from", "productos").append("localField", "facturas.items.producto").append("foreignField", "_id").append("as", "detalles_producto")));
+
+
+        result = clientesCollectionManager.getCollection().aggregate(pipeline);
+        result.forEach(System.out::println);
     }
 
     private static void exportacion() {
 
+        try {
 
+
+            ObjectMapper mapeador = new ObjectMapper();
+
+
+            var consulta = clientesCollectionManager.getCollection().find()
+                    .into(new ArrayList<>());
+
+            File fichero = new File("src\\main\\resources\\ficheroClientes.json");
+
+            mapeador.writeValue(fichero, consulta);
+
+
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        try {
+
+
+            ObjectMapper mapeador = new ObjectMapper();
+
+
+            var consulta = proveedoresCollectionManager.getCollection().find()
+                    .into(new ArrayList<>());
+
+            File fichero = new File("src\\main\\resources\\ficheroProveedores.json");
+
+            mapeador.writeValue(fichero, consulta);
+
+
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        try {
+
+
+            ObjectMapper mapeador = new ObjectMapper();
+
+
+            var consulta = productosCollectionManager.getCollection().find()
+                    .into(new ArrayList<>());
+
+            File fichero = new File("src\\main\\resources\\ficheroProductos.json");
+
+            mapeador.writeValue(fichero, consulta);
+
+
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
 
